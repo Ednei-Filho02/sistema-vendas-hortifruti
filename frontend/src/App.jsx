@@ -8,6 +8,66 @@ function App() {
   const [erro, setErro] = useState('')
   const [carrinho, setCarrinho] = useState([])
   const [mostrarCarrinho, setMostrarCarrinho] = useState(false)
+  const [etapaPedido, setEtapaPedido] = useState('carrinho')
+  const [nomeCliente, setNomeCliente] = useState('')
+  const [tipoEntrega, setTipoEntrega] = useState('entrega')
+  const [enderecoEntrega, setEnderecoEntrega] = useState('')
+
+
+  
+function enviarPedidoWhatsApp() {
+  if (carrinho.length === 0) {
+    alert('Adicione pelo menos um produto ao carrinho.')
+    return
+  }
+
+  if (!nomeCliente.trim()) {
+    alert('Informe seu nome para continuar.')
+    return
+  }
+
+  if (tipoEntrega === 'entrega' && !enderecoEntrega.trim()) {
+    alert('Informe o endereço de entrega.')
+    return
+  }
+
+
+  const numeroWhatsApp = '5577991201800'
+
+  const itensPedido = carrinho.map((item) => {
+    const preco = Number(item.price)
+    const quantidade = Number(item.quantidade)
+    const subtotal = preco * quantidade
+
+    return (
+      `• ${item.name}\n` +
+      `  Quantidade: ${quantidade} ${item.unit}\n` +
+      `  Preço unitário: R$ ${preco.toFixed(2).replace('.', ',')}\n` +
+      `  Subtotal: R$ ${subtotal.toFixed(2).replace('.', ',')}`
+    )
+  })
+
+  const mensagem = [
+    'Olá! Gostaria de fazer um pedido.',
+    '',
+    `Cliente: ${nomeCliente.trim()}`,
+    `Modalidade: ${tipoEntrega === 'entrega' ? 'Entrega' : 'Retirada na loja'}`,
+    ...(tipoEntrega === 'entrega'
+      ? [`Endereço: ${enderecoEntrega.trim()}`]
+      : []),
+    '',
+    'PEDIDO:',
+    ...itensPedido,
+    '',
+    `TOTAL DO PEDIDO: R$ ${totalPedido.toFixed(2).replace('.', ',')}`,
+    '',
+    'Aguardo a confirmação do pedido. Obrigado!'
+  ].join('\n')
+
+  const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensagem)}`
+
+  window.open(url, '_blank', 'noopener,noreferrer')
+}
 
 
   // Calcula a quantidade total de unidades no carrinho
@@ -186,12 +246,15 @@ function App() {
             </strong>
           </button>
         )}
-
+        
         {/* Painel deslizante do carrinho */}
         {mostrarCarrinho && (
           <div
             className="fundo-carrinho"
-            onClick={() => setMostrarCarrinho(false)}
+            onClick={() => {
+              setMostrarCarrinho(false)
+              setEtapaPedido('carrinho')
+            }}
           >
             <aside
               className="painel-carrinho"
@@ -202,103 +265,219 @@ function App() {
             >
               <header className="cabecalho-carrinho">
                 <div>
-                  <h2 id="titulo-carrinho">Seu pedido</h2>
+                  <h2 id="titulo-carrinho">
+                    {etapaPedido === 'carrinho'
+                      ? 'Seu pedido'
+                      : 'Finalizar pedido'}
+                  </h2>
+
                   <p>
-                    {totalItens} {totalItens === 1 ? 'item' : 'itens'} no carrinho
+                    {etapaPedido === 'carrinho'
+                      ? `${totalItens} ${totalItens === 1 ? 'item' : 'itens'} no carrinho`
+                      : 'Informe os dados para continuar'}
                   </p>
                 </div>
 
                 <button
                   type="button"
                   className="botao-fechar-carrinho"
-                  onClick={() => setMostrarCarrinho(false)}
+                  onClick={() => {
+                    setMostrarCarrinho(false)
+                    setEtapaPedido('carrinho')
+                  }}
                   aria-label="Fechar carrinho"
                 >
                   ×
                 </button>
               </header>
 
-              <div className="conteudo-carrinho">
-                {carrinho.length === 0 ? (
-                  <p>Seu carrinho está vazio.</p>
-                ) : (
-                  carrinho.map((item) => (
-                    <article className="item-carrinho" key={item.id}>
-                      <div className="detalhes-carrinho">
-                        <h3>{item.name}</h3>
+              {etapaPedido === 'carrinho' ? (
+                <>
+                  <div className="conteudo-carrinho">
+                    {carrinho.length === 0 ? (
+                      <p>Seu carrinho está vazio.</p>
+                    ) : (
+                      carrinho.map((item) => (
+                        <article className="item-carrinho" key={item.id}>
+                          <div className="detalhes-carrinho">
+                            <h3>{item.name}</h3>
+
+                            <p>
+                              R${' '}
+                              {Number(item.price)
+                                .toFixed(2)
+                                .replace('.', ',')}{' '}
+                              / {item.unit}
+                            </p>
+
+                            <div className="controles-quantidade">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  alterarQuantidade(item.id, -1)
+                                }
+                                aria-label={`Diminuir quantidade de ${item.name}`}
+                              >
+                                −
+                              </button>
+
+                              <span>{item.quantidade}</span>
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  alterarQuantidade(item.id, 1)
+                                }
+                                aria-label={`Aumentar quantidade de ${item.name}`}
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="acoes-carrinho">
+                            <p className="subtotal-carrinho">
+                              R${' '}
+                              {(Number(item.price) *
+                                Number(item.quantidade))
+                                .toFixed(2)
+                                .replace('.', ',')}
+                            </p>
+
+                            <button
+                              type="button"
+                              className="botao-remover"
+                              onClick={() => removerDoCarrinho(item.id)}
+                            >
+                              Remover
+                            </button>
+                          </div>
+                        </article>
+                      ))
+                    )}
+                  </div>
+
+                  {carrinho.length > 0 && (
+                    <footer className="rodape-carrinho">
+                      <div className="total-carrinho">
+                        <h3>Total do pedido</h3>
 
                         <p>
-                          R${' '}
-                          {Number(item.price)
-                            .toFixed(2)
-                            .replace('.', ',')}{' '}
-                          / {item.unit}
+                          R$ {totalPedido.toFixed(2).replace('.', ',')}
                         </p>
-
-                        <div className="controles-quantidade">
-                          <button
-                            type="button"
-                            onClick={() => alterarQuantidade(item.id, -1)}
-                            aria-label={`Diminuir quantidade de ${item.name}`}
-                          >
-                            −
-                          </button>
-
-                          <span>{item.quantidade}</span>
-
-                          <button
-                            type="button"
-                            onClick={() => alterarQuantidade(item.id, 1)}
-                            aria-label={`Aumentar quantidade de ${item.name}`}
-                          >
-                            +
-                          </button>
-                        </div>
                       </div>
 
-                      <div className="acoes-carrinho">
-                        <p className="subtotal-carrinho">
-                          R${' '}
-                          {(Number(item.price) * Number(item.quantidade))
-                            .toFixed(2)
-                            .replace('.', ',')}
-                        </p>
+                      <button
+                        type="button"
+                        className="botao-finalizar-pedido"
+                        onClick={() => setEtapaPedido('dados')}
+                      >
+                        Finalizar pedido
+                      </button>
 
-                        <button
-                          type="button"
-                          className="botao-remover"
-                          onClick={() => removerDoCarrinho(item.id)}
-                        >
-                          Remover
-                        </button>
-                      </div>
-                    </article>
-                  ))
-                )}
-              </div>
+                      <button
+                        type="button"
+                        className="botao-continuar-comprando"
+                        onClick={() => setMostrarCarrinho(false)}
+                      >
+                        Continuar comprando
+                      </button>
+                    </footer>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className="conteudo-carrinho formulario-finalizacao">
+                    <label htmlFor="nome-cliente">
+                      Seu nome
+                    </label>
 
-              {carrinho.length > 0 && (
-                <footer className="rodape-carrinho">
-                  <div className="total-carrinho">
-                    <h3>Total do pedido</h3>
+                    <input
+                      id="nome-cliente"
+                      type="text"
+                      value={nomeCliente}
+                      onChange={(evento) =>
+                        setNomeCliente(evento.target.value)
+                      }
+                      placeholder="Digite seu nome"
+                      autoComplete="name"
+                    />
 
-                    <p>
-                      R$ {totalPedido.toFixed(2).replace('.', ',')}
+                    <label htmlFor="tipo-entrega">
+                      Como deseja receber o pedido?
+                    </label>
+
+                    <select
+                      id="tipo-entrega"
+                      value={tipoEntrega}
+                      onChange={(evento) =>
+                        setTipoEntrega(evento.target.value)
+                      }
+                    >
+                      <option value="entrega">
+                        Entrega em domicílio
+                      </option>
+
+                      <option value="retirada">
+                        Retirada na loja
+                      </option>
+                    </select>
+
+                    {tipoEntrega === 'entrega' && (
+                      <>
+                        <label htmlFor="endereco-entrega">
+                          Endereço de entrega
+                        </label>
+
+                        <textarea
+                          id="endereco-entrega"
+                          value={enderecoEntrega}
+                          onChange={(evento) =>
+                            setEnderecoEntrega(evento.target.value)
+                          }
+                          placeholder="Rua, número, bairro e ponto de referência"
+                          rows={4}
+                        />
+                      </>
+                    )}
+
+                    <div className="resumo-finalizacao">
+                      <span>Total do pedido</span>
+
+                      <strong>
+                        R$ {totalPedido.toFixed(2).replace('.', ',')}
+                      </strong>
+                    </div>
+
+                    <p className="aviso-finalizacao">
+                      Confira seus dados. O WhatsApp abrirá com a mensagem
+                      pronta para você revisar e enviar.
                     </p>
                   </div>
 
-                  <button
-                    type="button"
-                    className="botao-continuar-comprando"
-                    onClick={() => setMostrarCarrinho(false)}
-                  >
-                    Continuar comprando
-                  </button>
-                </footer>
+                  <footer className="rodape-carrinho">
+                    <button
+                      type="button"
+                      className="botao-finalizar-pedido"
+                      onClick={enviarPedidoWhatsApp}
+                    >
+                      Enviar pedido pelo WhatsApp
+                    </button>
+
+                    <button
+                      type="button"
+                      className="botao-continuar-comprando"
+                      onClick={() => setEtapaPedido('carrinho')}
+                    >
+                      Voltar ao carrinho
+                    </button>
+                  </footer>
+                </>
               )}
             </aside>
           </div>
         )}
+
 
     </main>
   )

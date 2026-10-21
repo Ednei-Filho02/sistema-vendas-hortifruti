@@ -654,3 +654,88 @@ button {
     transition: none;
   }
 }
+
+
+/* Botão principal de finalização */
+.botao-finalizar-pedido {
+  width: 100%;
+  margin-top: 18px;
+  padding: 15px 16px;
+  border: none;
+  border-radius: 9px;
+  background: #15803d;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.botao-finalizar-pedido:hover {
+  background: #166534;
+}
+
+/* Formulário de finalização */
+.formulario-finalizacao {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.formulario-finalizacao label {
+  margin-top: 12px;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.formulario-finalizacao input,
+.formulario-finalizacao select,
+.formulario-finalizacao textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #111827;
+  font: inherit;
+}
+
+.formulario-finalizacao input:focus,
+.formulario-finalizacao select:focus,
+.formulario-finalizacao textarea:focus {
+  outline: 2px solid #86efac;
+  border-color: #15803d;
+}
+
+.formulario-finalizacao textarea {
+  resize: vertical;
+}
+
+.resumo-finalizacao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 16px 0;
+  border-top: 1px solid #e5e7eb;
+}
+
+.resumo-finalizacao strong {
+  color: #15803d;
+  font-size: 20px;
+  white-space: nowrap;
+}
+
+.aviso-finalizacao {
+  margin: 0;
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.rodape-carrinho .botao-finalizar-pedido {
+  margin-top: 0;
+}
