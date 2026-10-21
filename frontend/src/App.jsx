@@ -47,21 +47,30 @@ function enviarPedidoWhatsApp() {
     )
   })
 
-  const mensagem = [
+    const mensagem = [
+    '🛒 *PEDIDO — HORTIFRUTI*',
+    '',
     'Olá! Gostaria de fazer um pedido.',
     '',
-    `Cliente: ${nomeCliente.trim()}`,
+    '👤 *DADOS DO CLIENTE*',
+    `Nome: ${nomeCliente.trim()}`,
     `Modalidade: ${tipoEntrega === 'entrega' ? 'Entrega' : 'Retirada na loja'}`,
     ...(tipoEntrega === 'entrega'
       ? [`Endereço: ${enderecoEntrega.trim()}`]
       : []),
     '',
-    'PEDIDO:',
-    ...itensPedido,
+    '🥬 *ITENS DO PEDIDO*',
     '',
-    `TOTAL DO PEDIDO: R$ ${totalPedido.toFixed(2).replace('.', ',')}`,
+    ...itensPedido.flatMap((item, index) => [
+      item,
+      '',
+      ...(index < itensPedido.length - 1 ? ['━━━━━━━━━━━━━━'] : []),
+      ...(index < itensPedido.length - 1 ? [''] : [])
+    ]),
     '',
-    'Aguardo a confirmação do pedido. Obrigado!'
+    '━━━━━━━━━━━━━━━━',
+    `💰 *TOTAL ESTIMADO: R$ ${totalPedido.toFixed(2).replace('.', ',')}*`,
+    '━━━━━━━━━━━━━━━━'
   ].join('\n')
 
   const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensagem)}`
@@ -314,7 +323,7 @@ function enviarPedidoWhatsApp() {
                               <button
                                 type="button"
                                 onClick={() =>
-                                  alterarQuantidade(item.id, -1)
+                                  alterarQuantidade(item.id, -.5)
                                 }
                                 aria-label={`Diminuir quantidade de ${item.name}`}
                               >
@@ -326,7 +335,7 @@ function enviarPedidoWhatsApp() {
                               <button
                                 type="button"
                                 onClick={() =>
-                                  alterarQuantidade(item.id, 1)
+                                  alterarQuantidade(item.id, .5)
                                 }
                                 aria-label={`Aumentar quantidade de ${item.name}`}
                               >
@@ -451,7 +460,11 @@ function enviarPedidoWhatsApp() {
 
                     <p className="aviso-finalizacao">
                       Confira seus dados. O WhatsApp abrirá com a mensagem
-                      pronta para você revisar e enviar.
+                      pronta para você revisar e enviar. <br/> <br />
+                      ⚠️ <strong>IMPORTANTE SOBRE OS VALORES</strong>, <br/>
+                      Os valores são estimados. Como alguns produtos são vendidos por peso,
+                       o valor final poderá sofrer pequenas alterações conforme o peso real dos produtos. <br /> <br />
+                      <b>Aguardo a confirmação do pedido. Obrigado pela preferência! 😊</b>
                     </p>
                   </div>
 
